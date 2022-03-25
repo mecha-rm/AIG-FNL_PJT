@@ -16,39 +16,11 @@ public class UserPlayer : Player
     {
         base.Update();
 
-        // rotates through
-        if (Input.GetAxisRaw("Horizontal") != 0)
-            Rotate(Input.GetAxisRaw("Horizontal"));
-
-        // applying force
-        if(Input.GetAxisRaw("Vertical") != 0)
-        {
-            // going to apply force.
-            applyForce = true;
-        
-        
-            // the horizontal axis
-            // float horiAxis = Input.GetAxisRaw("Horizontal");
-        
-            // the vertical axis.
-            float vertAxis = Input.GetAxisRaw("Vertical");
-        
-            // applying a horizontal force.
-            // if (horiAxis != 0.0F)
-            //     direcForce.x = horiAxis; // side axis
-        
-            // applying a vertical force.
-            if (vertAxis != 0.0F)
-                forceDirec.z = vertAxis; // forward axis.
-        
-        }
-        else
-        {
-            // no longer applying force.
-            applyForce = false;
-        
-            // reset to base.
-            forceDirec = Vector3.zero;
-        }
+        // perform an action.
+        Action(
+            Input.GetAxisRaw("Horizontal"), // rotate
+            Input.GetAxisRaw("Vertical"), // accelerate
+            Input.GetAxisRaw("Jump") != 0.0F // jump
+            ); 
     }
 }
