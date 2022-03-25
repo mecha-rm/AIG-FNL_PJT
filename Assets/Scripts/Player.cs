@@ -9,9 +9,10 @@ public class Player : MonoBehaviour
     public new Rigidbody rigidbody;
 
     // force is applied in the forward direction of the object.
-    public float rotationRate = 60.0F;
+    public float rotationRate = 80.0F;
 
     // if 'true', force is applied.
+    // TODO: rework this since it might be unnecessary since actionDirec.z already covers it.
     public bool applyForce = true;
 
     // the action direction (positive or negative)
@@ -21,7 +22,7 @@ public class Player : MonoBehaviour
     protected Vector3 actionDirec = Vector3.zero;
 
     // the multiplied force for moving the player.
-    public float forcePower = 20.0F;
+    public float forcePower = 15.0F;
 
     // caps the maximum velocity.
     public float maxVelocity = 50.0F;
@@ -136,7 +137,7 @@ public class Player : MonoBehaviour
         }
 
         // if the player is drifting (only happens when accelerating)
-        if (drifting && applyForce && actionDirec.z != 0)
+        if (drifting)
         {
             // the new drift angle.
             float newDriftAngle = driftAngle + driftInc * actionDirec.x * Time.deltaTime;

@@ -279,13 +279,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rigidbody: {fileID: 0}
-  rotationRate: 75
-  applyForce: 0
+  rotationRate: 80
+  applyForce: 1
   forcePower: 15
   maxVelocity: 50
   drifting: 0
   driftInc: 50
   driftAngle: 0
+  driftMaxAngle: 90
 --- !u!54 &146521980
 Rigidbody:
   m_ObjectHideFlags: 0
