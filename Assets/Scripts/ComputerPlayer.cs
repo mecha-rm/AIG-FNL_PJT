@@ -5,8 +5,8 @@ using UnityEngine;
 // Q-value storing object
 public class QValueStore
 {
-    // state, action
-    float[,] array = new float[4, 2];
+    // state, actions (speed up, speed down, turn left, turn right)
+    float[,] array = new float[4, 4];
     public float getQValue(state, action);
     public int getBestAction(state);
     public void storeQValue(state, action, value);
