@@ -5,7 +5,7 @@ using UnityEngine;
 // Q-value storing object/reference table
 public class QValueStore
 {
-    // reference table, size # of states by # of actions ((edit for accuracy))
+    // reference table, size # of states by # of actions ((edit for accuracy, and figure out if it starts with all cells as 0/figure out how/what to initialize as))
     public static int states = 4;
     public static int actions = 4;
     float[,] Qtable = new float[states,actions];
@@ -140,6 +140,7 @@ public class ComputerPlayer : Player
     // discountRate -> how much the next state's Q-value affects the current action (0-1) ((delete: try 0.75))
     // exploreChance -> how often random action is taken (0-1) ((delete:try 0.2))
     // nu (edit rename later) -> chance for car to start a new chain of states and actions (0-1) ((delete:try 0))
+    // edit/delete, figure out how to tell the AI that it's reached the end/figure out how to calculate reward
     public void QLearning(ReinforcementProblem problem, int iterations, float learnRate,
                           float discountRate, float exploreChance, float nu)
     {
