@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class GameplayManager : MonoBehaviour
 {
     // the race track for the game (there should only be one in the scene).
-    public RaceTrack track;
+    public RaceTrack raceTrack;
 
     // // the audio manager for the game.
     // // audio components tied to buttons are attached to them.
@@ -23,8 +23,8 @@ public class GameplayManager : MonoBehaviour
     void Start()
     {
         // finds the race track.
-        if (track == null)
-            track = FindObjectOfType<RaceTrack>();
+        if (raceTrack == null)
+            raceTrack = FindObjectOfType<RaceTrack>();
 
         // // finds the audio manager.
         // if (audioManager == null)

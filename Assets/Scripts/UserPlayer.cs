@@ -20,7 +20,7 @@ public class UserPlayer : Player
         Action(
             Input.GetAxisRaw("Horizontal"), // rotate
             Input.GetAxisRaw("Vertical"), // accelerate
-            Input.GetAxisRaw("Jump") != 0.0F // jump
+            Input.GetAxisRaw("Jump") != 0.0F // jump (drifting)
             ); 
     }
 }

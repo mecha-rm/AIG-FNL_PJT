@@ -74,4 +74,71 @@ public class Rotation : MonoBehaviour
     {
         return RotateEuler(v, Vector3.forward, angle, inDegrees);
     }
+
+    // TRIANGLE ANGLE //
+
+    // consolidation function.
+    // [1] = soh, [2] = cah, [3] = toa
+    private float TriangleAngleBetween(int trigFunc, float value1, float value2, bool returnInDegrees)
+    {
+        // the angle
+        float angle = 0;
+
+
+        // checks what trig function to use.
+        // all functions return the angle in radians.
+        switch (trigFunc)
+        {
+            // soh
+            case 1:
+                // sin a = opp / hyp
+                angle = Mathf.Asin(value1 / value2);
+                break;
+
+            // cah
+            case 2:
+                // cos a = adj / hyp
+                angle = Mathf.Acos(value1 / value2);
+                break;
+
+            // toa
+            case 3:
+                // tan a = opp / adj
+                angle = Mathf.Atan(value1 / value2);
+                break;
+
+            // could not discern function. This should never be reached.                
+            default:
+                Debug.LogError("Improper value provided. Cannot discern function.");
+                return 0;
+        }
+
+        // if the result should be retuend in degrees.
+        if (returnInDegrees)
+            angle = Mathf.Rad2Deg * angle;
+
+        // returns the angle.
+        return angle;
+    }
+
+    // SINE - SOH//
+    // value version
+    public float TriangleAngleBetweenOppositeHypotenuse(float opp, float hyp, bool returnInDegrees)
+    {
+        return TriangleAngleBetween(1, opp, hyp, returnInDegrees);
+    }
+
+    // COSINE - CAH //
+    // CAH
+    public float AngleBetweenAdjacentHypotenuse(float adj, float hyp, bool returnInDegrees)
+    {
+        return TriangleAngleBetween(2, adj, hyp, returnInDegrees);
+    }
+
+    // TANGENT - TOA //
+    // TOA 
+    public float AngleBetweenOppositeAdjacent(float opp, float adj, bool returnInDegrees)
+    {
+        return TriangleAngleBetween(3, opp, adj, returnInDegrees);
+    }
 }

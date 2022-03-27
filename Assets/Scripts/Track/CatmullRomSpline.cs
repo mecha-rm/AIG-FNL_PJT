@@ -49,6 +49,12 @@ public class CatmullRomSpline : MonoBehaviour
             nodes.AddRange(list);
         }
 
+        // sets the node splines (a node can only belong to one spline).
+        foreach(SplineNode node in nodes)
+        {
+            node.spline = this;
+        }
+
         // adds a line renderer
         if (lineRenderer == null)
         {
@@ -95,6 +101,48 @@ public class CatmullRomSpline : MonoBehaviour
             return null;
         else
             return nodes[nodes.Count - 1];
+    }
+
+    // adds a node to the end of the list.
+    public void AddNode(SplineNode newNode)
+    {
+        nodes.Add(newNode);
+        newNode.spline = this;
+    }
+
+    // removes a node from the list.
+    public bool RemoveNode(SplineNode node)
+    {
+        // removes the item.
+        bool removed = nodes.Remove(node);
+
+        // removes the spline from the node.
+        if (removed && node.spline == this)
+            node.spline = null;
+
+        // returns removed.
+        return removed;
+    }
+
+    // removes a node from the list.
+    public bool RemoveNode(int index)
+    {
+        // index out of bounds.
+        if (index < 0 || index >= nodes.Count)
+            return false;
+
+        // gets the node.
+        SplineNode node = nodes[index];
+        
+        // removes the node.
+        nodes.RemoveAt(index);
+
+        // removes the spline from the node.
+        if (node.spline == this)
+            node.spline = null;
+
+        // returns removed.
+        return true;
     }
 
     // gets the index of the node.
