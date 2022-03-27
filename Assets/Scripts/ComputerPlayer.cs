@@ -5,11 +5,11 @@ using UnityEngine;
 // Q-value storing object
 public class QValueStore
 {
-    // state, actions (speed up, speed down, turn left, turn right)
-    float[,] array = new float[4, 4];
+    // state, speed, angle, actions (speed up, speed down, turn left, turn right)
+    float[,,,] array = new float[4,4,4,4];
     public float getQValue(state, action);
     public int getBestAction(state);
-    public void storeQValue(state, action, value);
+    public void storeQValue(state, action, float value);
 }
 
 public class ReinforcementProblem
@@ -25,7 +25,7 @@ public class ReinforcementProblem
     //  function takeAction(state, action)
 }
 
-public static QValueStore store = new QValueStore()
+public QValueStore store = new QValueStore()
 
 // this is the script for the player that's controlled by the computer.
 public class ComputerPlayer : Player
@@ -43,7 +43,7 @@ public class ComputerPlayer : Player
     }
 
     // Updates the store by investigating the problem.
-    function QLearning(problem, iterations, alpha, gamma, rho, nu)
+    public void QLearning(problem, int iterations, alpha, gamma, rho, nu)
     {
         // Get a starting state.
         state = problem.getRandomState()
