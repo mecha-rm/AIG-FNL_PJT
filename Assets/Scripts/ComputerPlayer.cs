@@ -160,7 +160,7 @@ public class ComputerPlayer : Player
 
         // old rotation value.
         // this always comes in positive.
-        Vector3 oldRot = transform.eulerAngles;
+        Vector3 oldRotEulers = transform.eulerAngles;
 
         // the rotation to face the target.
         float faceAngle = 0.0F;
@@ -174,180 +174,43 @@ public class ComputerPlayer : Player
         // the rotation factor to face the target.
         faceAngle = transform.eulerAngles.y;
 
+        // return to original
+        transform.eulerAngles = oldRotEulers;
+
         // checks if the computer should rotate.
-        if(Mathf.Abs(faceAngle) > 0.0F)
+        if (Mathf.Abs(faceAngle) > 0.0F)
         {
             // if the computer should instantly face the target.
             if (alwaysFaceTarget)
             {
                 // always face the entity.
-                transform.eulerAngles = new Vector3(oldRot.x, transform.eulerAngles.y, oldRot.z); // keeps y-rotation (up-rotation)
+                transform.eulerAngles = new Vector3(oldRotEulers.x, transform.eulerAngles.y, oldRotEulers.z); // keeps y-rotation (up-rotation)
             }
             else // gradual rotation
             {
-                // the current angle (must be positive)
-                float currAngle = oldRot.y;
+                // how to use RotateTowards: https://docs.unity3d.com/ScriptReference/Vector3.RotateTowards.html
 
-                // make sure the current angle is the lowest it can be. 
-                // can't use modulus since this is a float.
-                if (currAngle >= 360.0F) // if the computer has made a positive rotation.
-                {
-                    // reduce amount while greater than 360 degrees.
-                    while (currAngle >= 360.0F)
-                    {
-                        currAngle -= 360.0F;
-                    }
-                }
-                else if (currAngle < 0.0F) // if the computer has made a negative rotation.
-                {
-                    // increase the amount while less than or equal to 0.
-                    while (currAngle < 0.0F)
-                    {
-                        currAngle += 360.0F;
-                    }
-                }
+                // gets the two vectors.
+                Vector3 comForward = transform.forward;
+                Vector3 nodeDist = dist;
+                Vector3 result;
 
-                // reset to original rotation.
-                oldRot.y = currAngle; // give positive rotation.
-                transform.rotation = Quaternion.identity;
-                transform.eulerAngles = oldRot; // set rotation.
+                // y-values should stay the same.
+                nodeDist.y = comForward.y;
 
-                // // make sure the current angle is the lowest it can be. 
-                // // can't use modulus since this is a float.
-                // if (currAngle > 360.0F) // if the computer has made a full positive rotation.
-                // {
-                //     // reduce amount while greater than 360 degrees.
-                //     while (currAngle > 360.0F)
-                //     {
-                //         currAngle -= 360.0F;
-                //     }
-                // }
-                // else if (currAngle < -360.0F) // if the computer has made a full negative rotation.
-                // {
-                //     // increase the amount while less than -360
-                //     while (currAngle < -360.0F)
-                //     {
-                //         currAngle += 360.0F;
-                //     }
-                // }
-                
-                // // POSITIVE AND NEGATIVE ANGLES //
-                // 
-                // // the positive and negative version to the angle.
-                // float posFaceAngle = 0.0F;
-                // float negFaceAngle = 0.0F;
-                // 
-                // // the positive and negative current angle.
-                // // the current angle is always returned as positive, so we must find the negative.
-                // float posCurrRot = 0.0F;
-                // float negCurrRot = 0.0F;
-                // 
-                // // the minimum rotation.
-                // float minRot = 0.0F;
-                // 
-                // // GETS POSITIVE AND NEGATIVE VERSIONS OF ANGLES
-                // 
-                // // checks if face theta is positive or negative to get both versions.
-                // if (faceAngle > 0.0f) // positive rotation
-                // {
-                //     posFaceAngle = faceAngle;
-                //     negFaceAngle = -360.0F + faceAngle;
-                // }
-                // else if (faceAngle < 0.0F) // negative rotation 
-                // {
-                //     negFaceAngle = faceAngle;
-                //     posFaceAngle = 360.0F + faceAngle;
-                // }
-                // 
-                // // checks if current angle is positive or negative.
-                // if (currRot > 0.0f) // positive rotation
-                // {
-                //     posCurrRot = currRot;
-                //     negCurrRot = -360.0F + currRot;
-                // }
-                // else if (currRot < 0.0F) // negative rotation 
-                // {
-                //     negCurrRot = currRot;
-                //     posCurrRot = 360.0F + currRot;
-                // }
-                // 
-                // /*
-                //  * there are four combinations:
-                //  *  - positive face angle and positive current angle
-                //  *  - positive face angle and negative current angle
-                //  *  - negative face angle and positive current angle
-                //  *  - negative face angle and negative current angle
-                //  *  
-                //  *  You need to check the shortest path for all four.
-                //  */
-                // 
-                // // finds the lowest rotation factor.
-                // minRot = Mathf.Min(
-                //     posFaceAngle - posCurrRot, // +f and +c
-                //     posFaceAngle - negCurrRot, // +f and -c
-                //     
-                //     negFaceAngle - posCurrRot, // -f and +c
-                //     negFaceAngle - negCurrRot // -f and -c
-                //     );
-                // 
-                // // it faster to turn left or turn right?
-                // rotDirec = (minRot > 0.0F) ? 1.0F : -1.0F;
+                // the maximum radians.
+                float step = rotationRate * Mathf.Deg2Rad * Time.deltaTime;
 
-                // Debug.Log("Face-Theta: " + faceTheta.ToString());
+                // rotate toards the value.
+                result = Vector3.RotateTowards(comForward, nodeDist,
+                    step, 0.0F);
 
-                // NEW //
+                // change forward transform.
+                result.y = transform.forward.y;
+                transform.forward = result;
 
-                // // is it faster to rotate left or right?
-                // // the positive and negative version to the face angle.
-                // float posFaceAngle = 0.0F;
-                // float negFaceAngle = 0.0F;
-                // 
-                // // checks if face theta is positive or negative to get both versions.
-                // if (faceAngle > 0.0f) // positive rotation
-                // {
-                //     posFaceAngle = faceAngle;
-                //     negFaceAngle = -360.0F + faceAngle;
-                // }
-                // else if (faceAngle < 0.0F) // negative rotation 
-                // {
-                //     negFaceAngle = faceAngle;
-                //     posFaceAngle = 360.0F + faceAngle;
-                // }
-                // 
-                // 
-                // 
-                // float posFaceAngleLooped = posFaceAngle + 360.0F;
-                // float negFaceAngleLooped = negFaceAngle + 360.0F;
-
-
-                // creates 2 bounds to see which one the computer is closest to.
-                // it is the base angle and the angle after 1 complete loop.
-                float bound1 = faceAngle;
-                float bound2 = faceAngle + 360.0F;
-
-                // checks what bound the face angle is closest to.
-                float closestBound = ClosestBound(currAngle, bound1, bound2);
-
-                // if the angle after 1 revolution is closer, use that.
-                // that way it will go for the shortest path.
-                if (closestBound == bound2) 
-                {
-                    faceAngle = bound2;
-                }
-
-                // sets the rotation direction (always goes the same direction)
-                rotDirec = (faceAngle > currAngle) ? 1.0F : -1.0F;
             }
         }
-
-        // rotates in the direction of the entity.
-        // Rotate((theta - oldRot.y > 0.0F) ? 1.0F : -1.0F);
-        // Debug.Log("Rotation Direction: " + (theta - oldRot.y).ToString());
-
-        // turn in the shortest direction.
-
-        // moves in the direction of the node.
-        // Action(dist.normalized.x, dist.normalized.z, false);
 
         // horizontal is for rotating, vertical is for accelerating.
         Action(rotDirec, 1.0F, false);
