@@ -5,8 +5,13 @@ using UnityEngine;
 // the script for the player object.
 public class Player : MonoBehaviour
 {
+    // the gameplay manager.
+    public GameplayManager manager;
+
     // the player's rigidbody.
     public new Rigidbody rigidbody;
+
+    [Header("Movement")]
 
     // force is applied in the forward direction of the object.
     public float rotationRate = 80.0F;
@@ -44,6 +49,10 @@ public class Player : MonoBehaviour
     // Start is called before the first frame update
     protected void Start()
     {
+        // finds the gameplay manager.
+        if (manager == null)
+            manager = FindObjectOfType<GameplayManager>();
+
         // grabs the rigidbody if this is not set.
         if (rigidbody == null)
             rigidbody = GetComponent<Rigidbody>();

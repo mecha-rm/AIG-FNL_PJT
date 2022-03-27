@@ -67,6 +67,48 @@ public class CatmullRomSpline : MonoBehaviour
         
     }
 
+    // finds a node.
+    public SplineNode FindNode(int index)
+    {
+        // grabs and returns a nide.
+        if (index < 0 || index >= nodes.Count)
+            return null;
+        else
+            return nodes[index];
+    }
+
+    // gets the first node.
+    public SplineNode GetFirstNode()
+    {
+        // check if nodes available.
+        if (nodes.Count == 0)
+            return null;
+        else
+            return nodes[0];
+    }
+
+    // gets the last node.
+    public SplineNode GetLastNode()
+    {
+        // check if nodes available.
+        if (nodes.Count == 0)
+            return null;
+        else
+            return nodes[nodes.Count - 1];
+    }
+
+    // gets the index of the node.
+    public int IndexOfNode(SplineNode node)
+    {
+        return nodes.IndexOf(node);
+    }
+
+    // checks if a list contains a node.
+    public bool ContainsNode(SplineNode node)
+    {
+        return nodes.Contains(node);
+    }
+
     // does the catmull rom equation.
     public static Vector3 CatmullRom(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float t)
     {

@@ -16,9 +16,13 @@ public class SplineNode : MonoBehaviour
             spline = GetComponentInParent<CatmullRomSpline>();
     }
 
-    // Update is called once per frame
-    void Update()
+
+    // gets the index of the node in the spline.
+    public int GetIndexInSpline()
     {
-        
+        if (spline != null)
+            return spline.IndexOfNode(this);
+        else
+            return -1;
     }
 }

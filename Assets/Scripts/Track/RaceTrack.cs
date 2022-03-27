@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// the track
+// the race track script.
 public class RaceTrack : MonoBehaviour
 {
     // the track path.
