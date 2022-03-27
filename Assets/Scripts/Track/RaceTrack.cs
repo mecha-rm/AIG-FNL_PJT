@@ -11,9 +11,9 @@ public class RaceTrack : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        // checks itself for a spline.
+        // checks for a race path.
         if (path == null)
-            path = GetComponent<CatmullRomSpline>();
+            path = FindObjectOfType<CatmullRomSpline>(true);
     }
 
     // Update is called once per frame
