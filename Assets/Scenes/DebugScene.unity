@@ -1774,6 +1774,7 @@ MonoBehaviour:
   driftInc: 50
   driftAngle: 0
   driftMaxAngle: 90
+  learningAI: {fileID: 0}
   drive: 1
   destNode: {fileID: 0}
   alwaysFaceTarget: 0

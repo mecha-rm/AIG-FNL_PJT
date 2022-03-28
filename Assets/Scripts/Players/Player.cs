@@ -61,6 +61,7 @@ public class Player : MonoBehaviour
 
     // rotates the entity. If 'right' is true, you turn right. If false, you turn left.
     // you turn at thes speed of the rotation rate.
+    // the computer does not use this.
     public void Rotate(float direc)
     {
         // rotation.

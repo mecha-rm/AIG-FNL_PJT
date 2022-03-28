@@ -6,6 +6,12 @@ using UnityEngine.UI;
 // manages the gameplay
 public class GameplayManager : MonoBehaviour
 {
+    // the player
+    public UserPlayer userPlayer;
+
+    // the computer.
+    public ComputerPlayer comPlayer;
+
     // the race track for the game (there should only be one in the scene).
     public RaceTrack raceTrack;
 
@@ -19,9 +25,23 @@ public class GameplayManager : MonoBehaviour
     // toggle for muting the audio.
     public Toggle muteToggle;
 
+    // lap text for the player.
+    public Text userLapText;
+
+    // text for the computer running a lap.
+    public Text comLapText;
+
     // Start is called before the first frame update
     void Start()
     {
+        // user player not set, so find them.
+        if (userPlayer == null)
+            userPlayer = FindObjectOfType<UserPlayer>(true);
+
+        // computer player not set, so find them.
+        if (comPlayer == null)
+            comPlayer = FindObjectOfType<ComputerPlayer>(true);
+
         // finds the race track.
         if (raceTrack == null)
             raceTrack = FindObjectOfType<RaceTrack>();
