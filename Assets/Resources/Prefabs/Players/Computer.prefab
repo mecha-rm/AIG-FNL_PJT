@@ -28,7 +28,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6237950922292457896}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.5, z: 0}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 5844298120079339361}
@@ -94,7 +94,8 @@ MonoBehaviour:
   alwaysFaceTarget: 0
   followSpline: 0
   useLearning: 1
-  rotationThreshold: 0
+  rotationThreshold: 2.5
+  driftThreshold: 90
 --- !u!114 &1495118690193093625
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -108,9 +109,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   computer: {fileID: 0}
-  simIterations: 5
+  simIterations: 15
   refreshTimer: 0
-  refreshTimerMax: 2.5
+  refreshTimerMax: 0.25
 --- !u!1001 &6237950921922058468
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -65,13 +65,13 @@ public class ReinforcementLearning : MonoBehaviour
     private bool newAction = false;
 
     // the amount of iterations for a action simulation
-    public int simIterations = 5;
+    public int simIterations = 15;
 
     // the refresh rate of the AI. Refreshes on 0.
     public float refreshTimer = 0.0F;
 
     // refreshes.
-    public float refreshTimerMax = 2.5F;
+    public float refreshTimerMax = 0.25F;
 
     // reference table for the number of states by the number of actions.
     float[,] qualityTable;
@@ -304,6 +304,7 @@ public class ReinforcementLearning : MonoBehaviour
                 break;
 
             case stateAction.drift: // drift
+                updateAction.horizontal = (computer.rigidbody.velocity.x > 0.0F) ? 1.0F : -1.0F;
                 updateAction.drift = true;
                 break;
         }
@@ -311,6 +312,7 @@ public class ReinforcementLearning : MonoBehaviour
         // has the computer perform the action.
         computer.Action(updateAction.horizontal, updateAction.vertical, updateAction.drift);
         computer.PerformDrift();
+        
         updateAction.use = true;
         updateAction.distance = computer.GetDistanceFromDestinationNode(); // resulting distance.
 
@@ -334,6 +336,8 @@ public class ReinforcementLearning : MonoBehaviour
 
         // grabs the current state.
         state currState = GetCurrentState();
+
+        // Debug.Log("Current State: " + currState.ToString());
 
         // will reset the transformation values at the end.
         Vector3 origPos = computer.transform.position;
@@ -360,22 +364,62 @@ public class ReinforcementLearning : MonoBehaviour
         }
 
         // finds the highest end reward.
-        int lastCol = trials.GetLength(1) - 1; // the last column.
-        UpdateAction ua = trials[0, lastCol]; // grabs first value.
+        UpdateAction ua = trials[0, 0];
+        
+        // grabs the location.
+        Vector2Int uaIndex = new Vector2Int();
+
+        // the node with the lowest distance is the one that got closest to the target.
+        // grabs the lowest value of the first row.
+        for(int i = 0; i < trials.GetLength(1); i++)
+        {
+            // if the distance to the next trial is shorter, use this value.
+            if(Mathf.Min(ua.distance, trials[0, i].distance) != ua.distance)
+            {
+                // save content.
+                ua = trials[0, i];
+                uaIndex.x = 0;
+                uaIndex.y = i;
+            }   
+        }
 
         // grabs the shortest distance.
-        for (int i = 0; i < trials.GetLength(0); i++)
+        // even if the computer switches over to another destination node...
+        // the lowest distance value should still give the optimal result.
+        // note that this doesn't take into account how early said distance shows up.
+
+        for (int i = 0; i < trials.GetLength(0); i++) // goes through every row
         {
-            // new lowest value found.
-            if(Mathf.Min(ua.distance, trials[i, lastCol].distance) != ua.distance)
+            // grabs the first distance and location.
+            float tempDist = trials[i, 0].distance;
+            Vector2Int tempVec2Int = new Vector2Int(i, 0);
+
+            // goes through all the columns for the current row.
+            for (int j = 0; j < trials.GetLength(1); j++)
             {
-                ua = trials[i, lastCol];
+                // shorter value found.
+                if(Mathf.Min(tempDist, trials[i, j].distance) != tempDist)
+                {
+                    tempDist = trials[i, j].distance;
+                    tempVec2Int.x = i;
+                    tempVec2Int.y = j;
+                }
+            }
+
+            // checks against current ua distance to see what's lower.
+            // returns true if the new value has a shorter distance.
+            if(Mathf.Min(ua.distance, tempDist) != ua.distance)
+            {
+                ua = trials[tempVec2Int.x, tempVec2Int.y];
+                uaIndex = tempVec2Int;
             }
         }
 
         // sets next action.
         newAction = true; // this is a new action.
-        nextAction = ua;
+
+        // grabs the first action in the row with the lowest distance.
+        nextAction = trials[uaIndex.x, 0];
     }
 
 

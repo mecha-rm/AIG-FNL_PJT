@@ -34,10 +34,10 @@ public class ComputerPlayer : Player
     public bool useLearning = true;
 
     // threshold that must be passed for the computer to rotate towards the target.
-    public float rotationThreshold = 0.0F;
+    public float rotationThreshold = 2.5F;
     
     // // threshold that must be passed for the computer to drift towards the target.
-    // public float driftThreshold = 30.0F;
+    public float driftThreshold = 45.0F;
 
     // Start is called before the first frame update
     new void Start()
@@ -247,6 +247,8 @@ public class ComputerPlayer : Player
     // rotates towards the node distance.
     public void RotateTowardsNodeDistance(Vector3 nodeDist)
     {
+        // how to use RotateTowards: https://docs.unity3d.com/ScriptReference/Vector3.RotateTowards.html
+
         // gets the two vectors.
         Vector3 comForward = transform.forward;
         Vector3 targetDist = nodeDist;
@@ -317,6 +319,9 @@ public class ComputerPlayer : Player
         // the rotation direction.
         float rotDirec = 0.0F;
 
+        // becomes 'true' if the computer should drift.
+        bool drift = false;
+
         // changes the forward to face the camera.
         transform.forward = nodeDist.normalized;
 
@@ -340,38 +345,23 @@ public class ComputerPlayer : Player
             }
             else // gradual rotation
             {
-                // how to use RotateTowards: https://docs.unity3d.com/ScriptReference/Vector3.RotateTowards.html
-
-                // // gets the two vectors.
-                // Vector3 comForward = transform.forward;
-                // Vector3 targetDist = nodeDist;
-                // Vector3 result;
-                // 
-                // // y-values should stay the same.
-                // targetDist.y = comForward.y;
-                // 
-                // // the maximum radians.
-                // float step = rotationRate * Mathf.Deg2Rad * Time.deltaTime;
-                // 
-                // // rotate toards the value.
-                // result = Vector3.RotateTowards(comForward, targetDist,
-                //     step, 0.0F);
-                // 
-                // // change forward transform.
-                // result.y = transform.forward.y;
-                // transform.forward = result;
-
                 // rotates towards the node distance.
                 RotateTowardsNodeDistance(nodeDist);
 
+                // if the computer should drift.
+                if (faceAngle > driftThreshold) // drift
+                    drift = true;
+                else // don't drift
+                    drift = false;
             }
 
             // entity rotated.
             rotating = true;
         }
 
+
         // horizontal is for rotating, vertical is for accelerating.
-        Action(rotDirec, 1.0F, false);
+        Action(rotDirec, 1.0F, drift);
     }
 
     // Update is called once per frame
@@ -399,6 +389,7 @@ public class ComputerPlayer : Player
             // if a new action is available.
             if(learningAI.NewAction)
             {
+                // Debug.Log("Grabbed New Action.");
                 ReinforcementLearning.UpdateAction action = learningAI.NextAction;
 
                 // if the action should be used.
