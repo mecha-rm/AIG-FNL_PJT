@@ -26,9 +26,8 @@ public class ReinforcementLearning : MonoBehaviour
     // reference table, size # of states by # of actions ((edit for accuracy, and figure out if it starts with all cells as 0/figure out how/what to initialize as))
     // the state rewards are shorter times to reach the next node. 
 
-    // list of actions to be performed.
     /*
-     * list of actions to be performed.
+     * list of states
      *  - stopped: not moving (no input)
      *  - spinning: turning in place.
      *  - forward: moving forward
