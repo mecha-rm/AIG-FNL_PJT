@@ -20,6 +20,9 @@ public class ComputerPlayer : Player
     // node the player is heading towards.
     public SplineNode destNode;
 
+    // the computer is rotating.
+    public bool rotating;
+
     // if 'true', the computer will always face its target.
     // if 'false', the computer will need to rotate to face its target.
     public bool alwaysFaceTarget = false;
@@ -27,9 +30,12 @@ public class ComputerPlayer : Player
     // if 'true', the computer tries to follow the spline.
     public bool followSpline = true;
 
-    // // threshold that must be passed for the computer to rotate towards the target.
-    // public float rotationThreshold = 5.0F;
-    // 
+    // if 'true', the computer uses the learning algorithm.
+    public bool useLearning = true;
+
+    // threshold that must be passed for the computer to rotate towards the target.
+    public float rotationThreshold = 0.0F;
+    
     // // threshold that must be passed for the computer to drift towards the target.
     // public float driftThreshold = 30.0F;
 
@@ -48,6 +54,9 @@ public class ComputerPlayer : Player
                 learningAI = gameObject.AddComponent<ReinforcementLearning>();
             }
         }
+
+        // sets that this is the learning AI.
+        learningAI.computer = this;
     }
 
     // trigger collision entered.
@@ -135,7 +144,27 @@ public class ComputerPlayer : Player
         return manager.raceTrack.path.IndexOfNode(destNode);
     }
 
-    // gets a position on the spline to follow based on the user's distance from the node..
+    // gets the distance vector from the node.
+    public Vector3 GetDistanceVectorFromDestinationNode()
+    {
+        if (destNode == null)
+            return Vector3.zero;
+        else
+            return destNode.transform.position - transform.position;
+    }
+
+    // gets the distance from the node.
+    public float GetDistanceFromDestinationNode()
+    {
+        // (a-b).magnitude
+        if (destNode == null)
+            return 0.0F;
+        else
+            return Vector3.Distance(destNode.transform.position, transform.position);
+    }
+
+    // gets a position on the spline to follow based on the user's distance from the node.
+    // this doesn't work.
     public Vector3 GetSplineTarget(SplineNode target, float offset)
     {
         // the spline.
@@ -201,6 +230,43 @@ public class ComputerPlayer : Player
 
     }
 
+
+    // rotates towards the destination node.
+    // nodeDist = node.transform.position - transform.position;
+    public void RotateTowardsNodeDistance()
+    {
+        if (destNode == null)
+            return;
+
+        // calculates the node distance.
+        Vector3 nodeDist = destNode.transform.position - transform.position;
+        RotateTowardsNodeDistance(nodeDist);
+    }
+
+
+    // rotates towards the node distance.
+    public void RotateTowardsNodeDistance(Vector3 nodeDist)
+    {
+        // gets the two vectors.
+        Vector3 comForward = transform.forward;
+        Vector3 targetDist = nodeDist;
+        Vector3 result;
+
+        // y-values should stay the same.
+        targetDist.y = comForward.y;
+
+        // the maximum radians.
+        float step = rotationRate * Mathf.Deg2Rad * Time.deltaTime;
+
+        // rotate toards the value.
+        result = Vector3.RotateTowards(comForward, targetDist,
+            step, 0.0F);
+
+        // change forward transform.
+        result.y = transform.forward.y;
+        transform.forward = result;
+    }
+
     // travels toward the node.
     public void TravelTowardsNode()
     {
@@ -214,6 +280,7 @@ public class ComputerPlayer : Player
         Vector3 nodeDist = node.transform.position - transform.position;
 
         // checks if a point on the spline should be found.
+        // NOTE: DO NOT USE THE RUNSPLINE. IT DOES NOT WORK.
         if(runSpline && node.spline != null)
         {
             // gets the node index.
@@ -259,8 +326,11 @@ public class ComputerPlayer : Player
         // return to original
         transform.eulerAngles = oldRotEulers;
 
+        // the entity isn't rotating.
+        rotating = false;
+
         // checks if the computer should rotate.
-        if (Mathf.Abs(faceAngle) > 0.0F)
+        if (Mathf.Abs(faceAngle) > rotationThreshold)
         {
             // if the computer should instantly face the target.
             if (alwaysFaceTarget)
@@ -272,26 +342,32 @@ public class ComputerPlayer : Player
             {
                 // how to use RotateTowards: https://docs.unity3d.com/ScriptReference/Vector3.RotateTowards.html
 
-                // gets the two vectors.
-                Vector3 comForward = transform.forward;
-                Vector3 targetDist = nodeDist;
-                Vector3 result;
+                // // gets the two vectors.
+                // Vector3 comForward = transform.forward;
+                // Vector3 targetDist = nodeDist;
+                // Vector3 result;
+                // 
+                // // y-values should stay the same.
+                // targetDist.y = comForward.y;
+                // 
+                // // the maximum radians.
+                // float step = rotationRate * Mathf.Deg2Rad * Time.deltaTime;
+                // 
+                // // rotate toards the value.
+                // result = Vector3.RotateTowards(comForward, targetDist,
+                //     step, 0.0F);
+                // 
+                // // change forward transform.
+                // result.y = transform.forward.y;
+                // transform.forward = result;
 
-                // y-values should stay the same.
-                targetDist.y = comForward.y;
-
-                // the maximum radians.
-                float step = rotationRate * Mathf.Deg2Rad * Time.deltaTime;
-
-                // rotate toards the value.
-                result = Vector3.RotateTowards(comForward, targetDist,
-                    step, 0.0F);
-
-                // change forward transform.
-                result.y = transform.forward.y;
-                transform.forward = result;
+                // rotates towards the node distance.
+                RotateTowardsNodeDistance(nodeDist);
 
             }
+
+            // entity rotated.
+            rotating = true;
         }
 
         // horizontal is for rotating, vertical is for accelerating.
@@ -318,7 +394,28 @@ public class ComputerPlayer : Player
         }
 
         // travel towards the destination node.
-        TravelTowardsNode();
+        if(useLearning && learningAI != null)
+        {
+            // if a new action is available.
+            if(learningAI.NewAction)
+            {
+                ReinforcementLearning.UpdateAction action = learningAI.NextAction;
+
+                // if the action should be used.
+                if(action.use)
+                    Action(action.horizontal, action.vertical, action.drift);
+                else
+                    TravelTowardsNode();
+            }
+            else
+            {
+                TravelTowardsNode();
+            }
+        }
+        else
+        {
+            TravelTowardsNode();
+        }
 
 
     }

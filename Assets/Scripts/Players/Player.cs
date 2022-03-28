@@ -132,20 +132,9 @@ public class Player : MonoBehaviour
         drifting = drift;
     }
 
-    // Update is called once per frame
-    protected void Update()
+    // performs a drift.
+    public void PerformDrift()
     {
-        // applies force for movement.
-        if (applyForce)
-        {
-            // the final force to be applied.
-            // since z is the forward axis, only the z-axis component is considered.
-            Vector3 force = transform.forward * actionDirec.z * forcePower;
-
-            // applies the force.
-            rigidbody.AddForce(force);
-        }
-
         // if the player is drifting (only happens when accelerating)
         if (drifting)
         {
@@ -187,7 +176,7 @@ public class Player : MonoBehaviour
             switch (direc)
             {
                 case 1: // subtracted (positive rotation, check for less than 0)
-                    if(newDriftAngle < 0.0F)
+                    if (newDriftAngle < 0.0F)
                         newDriftAngle = 0.0f;
                     break;
 
@@ -216,6 +205,96 @@ public class Player : MonoBehaviour
             // sets this to the new drift angle.
             driftAngle = newDriftAngle;
         }
+    }
+
+    // Update is called once per frame
+    protected void Update()
+    {
+        // applies force for movement.
+        if (applyForce)
+        {
+            // the final force to be applied.
+            // since z is the forward axis, only the z-axis component is considered.
+            Vector3 force = transform.forward * actionDirec.z * forcePower;
+
+            // applies the force.
+            rigidbody.AddForce(force);
+        }
+
+        //// if the player is drifting (only happens when accelerating)
+        //if (drifting)
+        //{
+        //    // the new drift angle.
+        //    float newDriftAngle = driftAngle + driftInc * actionDirec.x * Time.deltaTime;
+        //    newDriftAngle = Mathf.Clamp(newDriftAngle, -driftMaxAngle, +driftMaxAngle);
+
+        //    // the player's (y) rotation
+        //    float playerRotY = transform.eulerAngles.y;
+        //    playerRotY -= driftAngle; // subtracts drift angle from it.
+        //    playerRotY += newDriftAngle; // adds new drift angle.
+
+
+        //    // the new rotation factor.
+        //    Vector3 newRot = new Vector3(
+        //        transform.eulerAngles.x,
+        //        playerRotY,
+        //        transform.eulerAngles.z
+        //        );
+
+        //    // sets the new player rotation.
+        //    transform.eulerAngles = newRot;
+
+        //    // sets this to the new drift angle.
+        //    driftAngle = newDriftAngle;
+
+        //}
+        //// not drifting anymore.
+        //else if (!drifting && Mathf.Abs(driftAngle) > 0.0F)
+        //{
+        //    // the subtraction direction.
+        //    // (1) means you subtract, (-1) means you add.
+        //    int direc = (driftAngle > 0.0F) ? 1 : -1;
+
+        //    // the new drift angle.
+        //    float newDriftAngle = driftAngle - driftInc * direc * Time.deltaTime;
+
+        //    // clamping - checks the direction.
+        //    switch (direc)
+        //    {
+        //        case 1: // subtracted (positive rotation, check for less than 0)
+        //            if(newDriftAngle < 0.0F)
+        //                newDriftAngle = 0.0f;
+        //            break;
+
+        //        case -1: // added (negative rotation, check for more than 0).
+        //            if (newDriftAngle > 0.0F)
+        //                newDriftAngle = 0.0f;
+        //            break;
+        //    }
+
+        //    // the player's (y) rotation
+        //    float playerRotY = transform.eulerAngles.y;
+        //    playerRotY -= driftAngle; // subtracts drift angle from it.
+        //    playerRotY += newDriftAngle; // boosts it by current drift angle.
+
+
+        //    // the new rotation factor.
+        //    Vector3 newRot = new Vector3(
+        //        transform.eulerAngles.x,
+        //        playerRotY,
+        //        transform.eulerAngles.z
+        //        );
+
+        //    // sets the new player rotation.
+        //    transform.eulerAngles = newRot;
+
+        //    // sets this to the new drift angle.
+        //    driftAngle = newDriftAngle;
+        //}
+
+
+        // performs a drift.
+        PerformDrift();
 
         // clamps the velocity.
         rigidbody.velocity = Vector3.ClampMagnitude(rigidbody.velocity, maxVelocity);

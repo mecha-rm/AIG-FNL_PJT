@@ -1,25 +1,47 @@
 using UnityEngine;
 
+// the script used for reinforcement learning.
 public class ReinforcementLearning : MonoBehaviour
 {
+    // action
+    public struct UpdateAction
+    {
+        // if 'true', this update action is usable.
+        public bool use;
+
+        // horizontal value
+        public float horizontal;
+
+        // vertical value
+        public float vertical;
+
+        // should be drifting.
+        public bool drift;
+
+        // the remaining distance.
+        public float distance;
+    }
+
     // reference table, size # of states by # of actions ((edit for accuracy, and figure out if it starts with all cells as 0/figure out how/what to initialize as))
-    
+    // the state rewards are shorter times to reach the next node. 
+
     // list of actions to be performed.
     /*
      * list of actions to be performed.
      *  - stopped: not moving (no input)
-     *  - backward: moving backward
+     *  - spinning: turning in place.
      *  - forward: moving forward
+     *  - backward: moving backward
      *  - turning: turning some direction.
      *  - drifting: drifting (turning while drifting).
      */
 
     // the states.
-    public enum state { stopped, backward, forward, turning, drifting };
+    public enum state { stopped, spinning, forward, backward, turning, drifting };
 
     // notably, const variabes are already static.
     // the amount of states.
-    public const int STATE_COUNT = 5;
+    public const int STATE_COUNT = 6;
     
     // list of actions
     /*
@@ -28,33 +50,77 @@ public class ReinforcementLearning : MonoBehaviour
      * rotate: start rotating to initiate a turn.
      * drift: initiate a drift to go into a drifting state.
      */
-    public enum action {accel, decel, rotate, drift};
+    public enum stateAction {stay, spin, accel, decel, turn, drift};
 
     // the number of actions.
-    public const int ACTION_COUNT = 4;
+    public const int STATE_ACTION_COUNT = 6;
+
+    // the computer player this learning AI belongs to.
+    public ComputerPlayer computer;
+
+    // the acton to be taken.
+    private UpdateAction nextAction;
+
+    // becomes true when a new action is available. False when the action is grabbed.
+    private bool newAction = false;
+
+    // the amount of iterations for a action simulation
+    public int simIterations = 5;
+
+    // the refresh rate of the AI. Refreshes on 0.
+    public float refreshTimer = 0.0F;
+
+    // refreshes.
+    public float refreshTimerMax = 2.5F;
 
     // reference table for the number of states by the number of actions.
-    float[,] qTable;
+    float[,] qualityTable;
 
     // Start is called before the first frame update
     void Start()
     {
-        qTable = new float[STATE_COUNT, ACTION_COUNT];
+        // this is handled by the computer script.
+        // // grabs the computer AI.
+        // if (computer == null)
+        // {
+        //     computer = GetComponent<ComputerPlayer>();
+        // } 
+
+        qualityTable = new float[STATE_COUNT, STATE_ACTION_COUNT];
     }
 
-    // retrieve Q-value from reference table
-    public float GetQValue(int state, int action)
+    // gets the next action.
+    public UpdateAction NextAction
     {
-        return qTable[state, action];
+        get
+        {
+            newAction = false; // no longer a new action.
+            return nextAction;
+        }
+    }
+
+    // returns 'true' if this is a new action.
+    public bool NewAction
+    {
+        get
+        {
+            return newAction;
+        }
+    }
+
+    // retrieve quality value from reference table
+    public float GetQualityValue(int state, int action)
+    {
+        return qualityTable[state, action];
     }
 
     // determine best action for a given state
     public int GetBestAction(int state)
     {
         int bestAction = 0;
-        for (int x = 0; x < ACTION_COUNT; x++)
+        for (int x = 0; x < STATE_ACTION_COUNT; x++)
         {
-            if (qTable[state, bestAction] < qTable[state, x])
+            if (qualityTable[state, bestAction] < qualityTable[state, x])
             {
                 bestAction = x;
             }
@@ -63,9 +129,9 @@ public class ReinforcementLearning : MonoBehaviour
     }
 
     // store Q-value into reference table
-    public void StoreQValue(int state, int action, float value)
+    public void StoreQualityValue(int state, int action, float value)
     {
-        qTable[state, action] = value;
+        qualityTable[state, action] = value;
     }
 
     // choose a random starting state for the problem.
@@ -87,9 +153,10 @@ public class ReinforcementLearning : MonoBehaviour
     public int[] GetAvailableActions(int state)
     {
         //edit: if manually setting impossible actions to -1, then change this to not include -1 actions
-        int[] temp = new int[ACTION_COUNT];
+        int[] temp = new int[STATE_ACTION_COUNT];
 
-        for (int x = 0; x < ACTION_COUNT; x++)
+        // fills array.
+        for (int x = 0; x < STATE_ACTION_COUNT; x++)
         {
             temp[x] = x;
         }
@@ -142,26 +209,188 @@ public class ReinforcementLearning : MonoBehaviour
             int newState = temp2[1];
 
             // Get the current q from the reference table.
-            float Q = GetQValue(state, action);
+            float Q = GetQualityValue(state, action);
 
             // Get the q of the best action from the new state.
-            float maxQ = GetQValue(newState, GetBestAction(newState));
+            float maxQ = GetQualityValue(newState, GetBestAction(newState));
 
             // Perform the q learning.
             Q = (1 - learnRate) * Q + learnRate * (reward + discountRate * maxQ);
 
             // Store the new Q-value.
-            StoreQValue(state, action, Q);
+            StoreQualityValue(state, action, Q);
 
             // And update the state.
             state = newState;
         }
     }
 
+    // SPLIT //
+    // returns the current state.
+    public state GetCurrentState()
+    {
+        // the current state.
+        state currState = 0;
+
+        // checks the current state of the computer.
+        if(computer.rigidbody.velocity != Vector3.zero) // moving
+        {
+            // checks for direction.
+            if (computer.drifting) // the computer is drifting.
+            {
+                currState = state.drifting;
+            }
+            else if (computer.rotating) // the computer is rotating.
+            {
+                currState = state.turning;
+            }
+            else if (computer.rigidbody.velocity.z > 0) // going forward
+            {
+                currState = state.forward;
+            }
+            else if (computer.rigidbody.velocity.z < 0) // going backwards
+            {
+                currState = state.backward;
+            }
+
+        } // not moving
+        else
+        {
+            // checks if turning, drifting, or stopped.
+            if (computer.rotating)
+                currState = state.spinning;
+
+            else
+                currState = state.stopped; // not moving
+        }
+
+        return currState;
+    }
+
+
+    // evaluates a state and an action.
+    // this applies the function to the computer, so make sure to back this content up.
+    private UpdateAction EvaluatePolicy(state state, stateAction stateAction)
+    {
+        // the update action.
+        UpdateAction updateAction = new UpdateAction();
+
+        // checks the state.
+        switch(stateAction)
+        {
+            case stateAction.stay: // don't move
+                updateAction.vertical = 0.0F;
+                break;
+
+            case stateAction.spin: // spin in place
+
+                // if the computer does not always face the target, rotate towards the node.
+                if (!computer.alwaysFaceTarget)
+                    computer.RotateTowardsNodeDistance();
+                break;
+
+            case stateAction.accel: // move forward
+                updateAction.vertical = 1.0F;
+                break;
+
+            case stateAction.decel: // back ward.
+                updateAction.vertical = -1.0F;
+                break;
+
+            case stateAction.turn: // turn
+                computer.drifting = false;
+                if (!computer.alwaysFaceTarget)
+                    computer.RotateTowardsNodeDistance();
+                break;
+
+            case stateAction.drift: // drift
+                updateAction.drift = true;
+                break;
+        }
+
+        // has the computer perform the action.
+        computer.Action(updateAction.horizontal, updateAction.vertical, updateAction.drift);
+        computer.PerformDrift();
+        updateAction.use = true;
+        updateAction.distance = computer.GetDistanceFromDestinationNode(); // resulting distance.
+
+        // returns the distance from the node.
+        return updateAction;
+    }
+
+    // determines what action to take.
+    public void DetermineNextAction(int iterations)
+    {
+        // iterations out of bounds.
+        if (iterations < 1)
+        {
+            // will not be used.
+            nextAction = new UpdateAction();
+            return;
+        }
+
+        // each trial corresponds with a different state option.
+        UpdateAction[,] trials = new UpdateAction[STATE_COUNT, iterations];
+
+        // grabs the current state.
+        state currState = GetCurrentState();
+
+        // will reset the transformation values at the end.
+        Vector3 origPos = computer.transform.position;
+        Quaternion origRot = computer.transform.rotation;
+        Vector3 origVel = computer.rigidbody.velocity;
+        bool drifting = computer.drifting;
+
+        // determines states
+        for (int s = 0; s < trials.GetLength(0); s++) // rows (states)
+        {
+            // simulates actions
+            for (int a = 0; a < trials.GetLength(1); a++)
+            {
+                // runs a trial for entering a state with a given action.
+                trials[s, a] = EvaluatePolicy((state)s, (stateAction)s);
+            }
+
+            // reset the computer values.
+            computer.transform.position = origPos;
+            computer.transform.rotation = origRot;
+            computer.rigidbody.velocity = origVel;
+            computer.drifting = drifting;
+
+        }
+
+        // finds the highest end reward.
+        int lastCol = trials.GetLength(1) - 1; // the last column.
+        UpdateAction ua = trials[0, lastCol]; // grabs first value.
+
+        // grabs the shortest distance.
+        for (int i = 0; i < trials.GetLength(0); i++)
+        {
+            // new lowest value found.
+            if(Mathf.Min(ua.distance, trials[i, lastCol].distance) != ua.distance)
+            {
+                ua = trials[i, lastCol];
+            }
+        }
+
+        // sets next action.
+        newAction = true; // this is a new action.
+        nextAction = ua;
+    }
+
 
     // Update is called once per frame
     void Update()
     {
-        
+        // refresh timer is less than or equal to 0.
+        if(refreshTimer <= 0.0F)
+        {
+            DetermineNextAction(simIterations);
+            refreshTimer = refreshTimerMax;
+        }
+        else
+        {
+            refreshTimer -= Time.deltaTime;
+        }
     }
 }

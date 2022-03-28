@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6237950922292457899}
   - component: {fileID: 6237950922292457898}
   - component: {fileID: 6237950922292457897}
+  - component: {fileID: 1495118690193093625}
   m_Layer: 0
   m_Name: Computer
   m_TagString: Computer
@@ -86,11 +87,30 @@ MonoBehaviour:
   driftInc: 50
   driftAngle: 0
   driftMaxAngle: 90
-  learningAI: {fileID: 0}
+  learningAI: {fileID: 1495118690193093625}
   drive: 1
   destNode: {fileID: 0}
+  rotating: 0
   alwaysFaceTarget: 0
   followSpline: 0
+  useLearning: 1
+  rotationThreshold: 0
+--- !u!114 &1495118690193093625
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6237950922292457896}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b08aca7a600351a4bbc7c836376701ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  computer: {fileID: 0}
+  simIterations: 5
+  refreshTimer: 0
+  refreshTimerMax: 2.5
 --- !u!1001 &6237950921922058468
 PrefabInstance:
   m_ObjectHideFlags: 0
