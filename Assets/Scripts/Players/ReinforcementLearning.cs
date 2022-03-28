@@ -3,11 +3,35 @@ using UnityEngine;
 public class ReinforcementLearning : MonoBehaviour
 {
     // reference table, size # of states by # of actions ((edit for accuracy, and figure out if it starts with all cells as 0/figure out how/what to initialize as))
-    // number of states
-    public int states = 4;
     
-    // number of actions
-    public int actions = 4;
+    // list of actions to be performed.
+    /*
+     * list of actions to be performed.
+     *  - stopped: not moving (no input)
+     *  - backward: moving backward
+     *  - forward: moving forward
+     *  - turning: turning some direction.
+     *  - drifting: drifting (turning while drifting).
+     */
+
+    // the states.
+    public enum state { stopped, backward, forward, turning, drifting };
+
+    // notably, const variabes are already static.
+    // the amount of states.
+    public const int STATE_COUNT = 5;
+    
+    // list of actions
+    /*
+     * accel: accelerate to speed up or continue at the same speed.
+     * decel: decelerate to slow down and go backwards or stop.
+     * rotate: start rotating to initiate a turn.
+     * drift: initiate a drift to go into a drifting state.
+     */
+    public enum action {accel, decel, rotate, drift};
+
+    // the number of actions.
+    public const int ACTION_COUNT = 4;
 
     // reference table for the number of states by the number of actions.
     float[,] qTable;
@@ -15,7 +39,7 @@ public class ReinforcementLearning : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        qTable = new float[states, actions];
+        qTable = new float[STATE_COUNT, ACTION_COUNT];
     }
 
     // retrieve Q-value from reference table
@@ -28,7 +52,7 @@ public class ReinforcementLearning : MonoBehaviour
     public int GetBestAction(int state)
     {
         int bestAction = 0;
-        for (int x = 0; x < actions; x++)
+        for (int x = 0; x < ACTION_COUNT; x++)
         {
             if (qTable[state, bestAction] < qTable[state, x])
             {
@@ -44,19 +68,28 @@ public class ReinforcementLearning : MonoBehaviour
         qTable[state, action] = value;
     }
 
-    // Choose a random starting state for the problem.
-    public int GetRandomState()
+    // choose a random starting state for the problem.
+    // returns a random state.
+    public state GetRandomState()
     {
-        return Random.Range(0, states);
+        return (state)Random.Range(0, STATE_COUNT);
     }
+
+    // choose a random starting state for the problem.
+    // return a random state as an int
+    public int GetRandomStateAsInt()
+    {
+        return Random.Range(0, STATE_COUNT);
+    }
+
 
     // Get the available actions for the given state.
     public int[] GetAvailableActions(int state)
     {
         //edit: if manually setting impossible actions to -1, then change this to not include -1 actions
-        int[] temp = new int[actions];
+        int[] temp = new int[ACTION_COUNT];
 
-        for (int x = 0; x < actions; x++)
+        for (int x = 0; x < ACTION_COUNT; x++)
         {
             temp[x] = x;
         }
@@ -81,14 +114,14 @@ public class ReinforcementLearning : MonoBehaviour
     public void QLearning(int iterations, float learnRate, float discountRate, float exploreChance, float nu)
     {
         // Get a starting state.
-        int state = GetRandomState();
+        int state = GetRandomStateAsInt();
          
         // Repeat a number of times.
         for (int x = 0; x < iterations; x++)
         {
             // Pick a new state every once in a while.
             if (Random.Range(0f, 1f) < nu)
-                state = GetRandomState();
+                state = GetRandomStateAsInt();
 
             // Get the list of available actions.
             int[] temp = GetAvailableActions(state);

@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - Spline Node
+  - Computer
   layers:
   - Default
   - TransparentFX

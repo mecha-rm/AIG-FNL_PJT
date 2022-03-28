@@ -199,7 +199,7 @@ public class CatmullRomSpline : MonoBehaviour
     }
 
     // runs hte catmull rom interpolation using the starting node index with a t value.
-    public Vector3 RunInterpolation(int startNodeIndex, float time)
+    public Vector3 Interpolate(int startNodeIndex, float time)
     {
         // index out of bounds, so position of 0 sent back.
         if (startNodeIndex < 0 || startNodeIndex >= nodes.Count)
@@ -318,7 +318,7 @@ public class CatmullRomSpline : MonoBehaviour
                 nodeIndex++;
 
             // sets the position of the node.
-            lineRenderer.SetPosition(i, RunInterpolation(nodeIndex, t));
+            lineRenderer.SetPosition(i, Interpolate(nodeIndex, t));
         }
 
     }

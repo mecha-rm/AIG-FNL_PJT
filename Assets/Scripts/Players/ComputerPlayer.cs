@@ -24,6 +24,9 @@ public class ComputerPlayer : Player
     // if 'false', the computer will need to rotate to face its target.
     public bool alwaysFaceTarget = false;
 
+    // if 'true', the computer tries to follow the spline.
+    public bool followSpline = true;
+
     // // threshold that must be passed for the computer to rotate towards the target.
     // public float rotationThreshold = 5.0F;
     // 
@@ -132,17 +135,83 @@ public class ComputerPlayer : Player
         return manager.raceTrack.path.IndexOfNode(destNode);
     }
 
+    // gets a position on the spline to follow based on the user's distance from the node..
+    public Vector3 GetSplineTarget(SplineNode target, float offset)
+    {
+        // the spline.
+        CatmullRomSpline spline;
+
+        // spline not set.
+        if(target.spline == null)
+        {
+            Debug.LogAssertion("This node isn't attached to a spline.");
+            return target.transform.position;
+        }
+        else
+        {
+            spline = target.spline;
+        }
+
+        // checks if a spline target can be generated.
+        if(spline.nodes.Count < 2)
+        {
+            Debug.LogAssertion("Not enough nodes to get a spline target.");
+            return target.transform.position;
+        }
+
+        // does not contain the node.
+        if(!spline.ContainsNode(target))
+        {
+            Debug.LogAssertion("Node is not in the list.");
+            return target.transform.position;
+        }
+
+        // gets the node's index.
+        int startIndex = spline.IndexOfNode(target);
+        startIndex = (startIndex - 1 < 0) ? spline.nodes.Count - 1 : startIndex - 1;
+
+        // grabs the starting node.
+        SplineNode startNode = spline.nodes[startIndex];
+
+        // Vector3.Distance is (a-b).magnitude
+        float t = Mathf.InverseLerp(
+            0.0F,
+            Vector3.Distance(target.transform.position, startNode.transform.position),
+            Vector3.Distance(target.transform.position, transform.position));
+
+        // add the offset to the t-value.
+        t += offset;
+
+        // checks against the t-value to see if it's worth running the interpolation.
+        if(t < 0.0F || t >= 1.0F)
+        {
+            // less than 0, so just go for the ending target's position.
+            // or greater than 1, so just go for the target position.
+            return target.transform.position;
+        }
+        else
+        {
+            // returns the new target. 
+            Vector3 newTarget = spline.Interpolate(startIndex, t);
+
+            Debug.Log("T: " + t.ToString() + " | NewTarget: " + newTarget.ToString());
+
+            return newTarget;
+        }
+
+    }
+
     // travels toward the node.
     public void TravelTowardsNode()
     {
-        TravelTowardsNode(destNode, true);
+        TravelTowardsNode(destNode, followSpline);
     }
 
     // runs the computer's AI.
     public void TravelTowardsNode(SplineNode node, bool runSpline)
     {
         // distance between points.
-        Vector3 dist = node.transform.position - transform.position;
+        Vector3 nodeDist = node.transform.position - transform.position;
 
         // checks if a point on the spline should be found.
         if(runSpline && node.spline != null)
@@ -150,23 +219,25 @@ public class ComputerPlayer : Player
             // gets the node index.
             int nodeIndex = node.spline.IndexOfNode(node);
 
-            // grabbed the node and checks that there are more than two points.
-            if(nodeIndex >= 0 && node.spline.nodes.Count > 1)
-            {
-                // TODO: implement checks against the spline.
+            // gets the new target.
+            Vector3 newTarget = GetSplineTarget(node, 0.1F);
 
-                dist = node.transform.position - transform.position;
-            }
-            else // node not in list, or spline only has one node.
+            // target is the node.
+            if(newTarget == node.transform.position)
             {
-                dist = node.transform.position - transform.position;
+                nodeDist = node.transform.position - transform.position;
+            }
+            else // target is something different.
+            {
+                // this is now a shortened version of the node distance.
+                nodeDist = newTarget - transform.position;
             }
 
         }
         else
         {
             // go for the node directly.
-            dist = node.transform.position - transform.position;
+            nodeDist = node.transform.position - transform.position;
         }
 
         // old rotation value.
@@ -180,7 +251,7 @@ public class ComputerPlayer : Player
         float rotDirec = 0.0F;
 
         // changes the forward to face the camera.
-        transform.forward = dist.normalized;
+        transform.forward = nodeDist.normalized;
 
         // the rotation factor to face the target.
         faceAngle = transform.eulerAngles.y;
@@ -203,17 +274,17 @@ public class ComputerPlayer : Player
 
                 // gets the two vectors.
                 Vector3 comForward = transform.forward;
-                Vector3 nodeDist = dist;
+                Vector3 targetDist = nodeDist;
                 Vector3 result;
 
                 // y-values should stay the same.
-                nodeDist.y = comForward.y;
+                targetDist.y = comForward.y;
 
                 // the maximum radians.
                 float step = rotationRate * Mathf.Deg2Rad * Time.deltaTime;
 
                 // rotate toards the value.
-                result = Vector3.RotateTowards(comForward, nodeDist,
+                result = Vector3.RotateTowards(comForward, targetDist,
                     step, 0.0F);
 
                 // change forward transform.
