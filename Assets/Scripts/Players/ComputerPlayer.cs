@@ -37,7 +37,7 @@ public class ComputerPlayer : Player
     public float rotationThreshold = 2.5F;
     
     // // threshold that must be passed for the computer to drift towards the target.
-    public float driftThreshold = 45.0F;
+    public float driftThreshold = 90.0F;
 
     // Start is called before the first frame update
     new void Start()

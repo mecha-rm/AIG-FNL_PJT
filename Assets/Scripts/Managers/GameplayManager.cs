@@ -62,6 +62,12 @@ public class GameplayManager : MonoBehaviour
         AudioListener.pause = muteToggle.isOn;
     }
 
+    // returns to the menu.
+    public void ReturnToMenu()
+    {
+        SceneHelper.ChangeScene("TitleScene");
+    }
+
     // Update is called once per frame
     void Update()
     {

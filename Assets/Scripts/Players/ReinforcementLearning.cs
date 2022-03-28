@@ -1,6 +1,7 @@
 using UnityEngine;
 
 // the script used for reinforcement learning.
+// NOTE: this script is a mish-mash of two attempts at reinforcement learning. As such, a few functions and variables are not used for anything.
 public class ReinforcementLearning : MonoBehaviour
 {
     // action

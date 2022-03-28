@@ -128,9 +128,22 @@ public class TitleManager : MonoBehaviour
     }
 
     // starts the game.
-    public void StartGame()
+    public void StartGame(int ver)
     {
-        SceneHelper.ChangeScene("GameScene");
+        switch(ver)
+        {
+            // the first track
+            default:
+            case 1:
+                SceneHelper.ChangeScene("DebugScene");
+                break;
+                
+                // the second track
+            case 2:
+                SceneHelper.ChangeScene("GameScene");
+                break;
+
+        }
     }
 
     // quits the game.
